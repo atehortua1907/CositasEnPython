@@ -1,4 +1,4 @@
-class ConversacionWp:
+class ConversacionWpModel:
 
     def __init__(self, fecha, alumno, mensaje, respuesta):
         self.fecha = fecha

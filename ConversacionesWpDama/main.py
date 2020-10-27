@@ -1,28 +1,52 @@
-from Models.ConversacionWp import ConversacionWp
+from Models.ConversacionWpModel import ConversacionWpModel
 import os
+import time
 
-files_dir = "D:\\David A\\Dama\\Conversaciones\\SeptiembreSemana3"
+start = time.time()
+
+
+files_dir = "D:\\David A\\Dama\\Conversaciones\\SepOctu"
 listConversacionWp = []
 Generalfile = 'conversaciones.csv'
+_lastFiledProcessedLog = 'lastFileProcessed.txt'
+teacherNames = ['Dama Gallego', 'Damaris Gallego🙃']
+_linesToIgnore = [
+    'cifrados de extremo a extremo',
+    'Este chat es con una cuenta de empresa',
+    'Esta cuenta de empresa ahora se ha registrado como una cuenta estándar',
+    'Creaste una lista de difusión con',
+    'Se añadió a',
+    'fueron añadidos a la lista'
+    ]
 
 def run():
     files = os.listdir(files_dir)
     for file in files:
+        fnSaveLog(file)
         fnObtenerConversacionesPorArchivo(file)
         fnSaveFile()
+    end = time.time()
+    print(end - start)
+
 
 def fnObtenerConversacionesPorArchivo(file):    
     with open(f'{files_dir}\\{file}', encoding='utf-8') as fileOpen:        
         for line in fileOpen:
-            if "cifrados de extremo a extremo" in line:
-                continue            
+            if(fnLineToIgnore(line)):
+                continue                    
             alumnoName = fnGetAlumnoName(fileOpen)
             conversacionPart = line.split(' - ')
             if len(conversacionPart) == 1:
                 fnAddMessageToLastPerson(conversacionPart[0])
             else:
-                ConversacionWp = fnObtenerConversacionWp(conversacionPart, alumnoName)
+                ConversacionWp = fnObtenerConversacionWpModel(conversacionPart, alumnoName)
                 listConversacionWp.append(ConversacionWp)
+
+def fnLineToIgnore(line):
+    for word in _linesToIgnore:
+        if word in line:
+            return True
+    return False
 
 def fnGetAlumnoName(fileOpen):
     return fileOpen.name.split('con')[1][:-4].strip()
@@ -30,33 +54,37 @@ def fnGetAlumnoName(fileOpen):
 def fnAddMessageToLastPerson(conversacionPart):
     lastConversation = listConversacionWp[-1]
     if lastConversation.respuesta == '':
-        lastConversation.mensaje = '{} {}'.format(lastConversation.mensaje.rstrip('\n'), conversacionPart.rstrip('\n'))
+        lastConversation.mensaje = '{} {}'.format(lastConversation.mensaje.strip('\n'), conversacionPart.strip('\n'))
     else:
-        lastConversation.respuesta = '{} {}'.format(lastConversation.respuesta.rstrip('\n'), conversacionPart.rstrip('\n'))
+        lastConversation.respuesta = '{} {}'.format(lastConversation.respuesta.strip('\n'), conversacionPart.strip('\n'))
     
     listConversacionWp[-1] = lastConversation
 
-def fnObtenerConversacionWp(conversacionPart, alumnoName):
+def fnObtenerConversacionWpModel(conversacionPart, alumnoName):
     message, teacherMessage = fnGetMessages(alumnoName, conversacionPart)
-    return ConversacionWp(conversacionPart[0], alumnoName, message, teacherMessage)
+    return ConversacionWpModel(conversacionPart[0], alumnoName, message, teacherMessage)
 
 
 def fnGetMessages(alumnoName, conversacionPart):
-    personAndMessage = conversacionPart[1].split(':')
+    personAndMessage = conversacionPart[1].split(': ')
     alumnoMessage = ''
     teacherMessage = ''    
-    if personAndMessage[0].strip() == 'Dama Gallego':
+    if personAndMessage[0].strip() in teacherNames:
         teacherMessage = personAndMessage[1]
     else:
         alumnoMessage = personAndMessage[1]
     
-    return alumnoMessage.rstrip('\n'), teacherMessage.rstrip('\n')
+    return alumnoMessage.strip('\n'), teacherMessage.strip('\n')
 
 def fnSaveFile():
     newFile = open(Generalfile,"w", encoding = "utf-8")
     for conversationWp in listConversacionWp:            
-        newFile.write(f'{conversationWp.fecha}|{conversationWp.alumno}|{conversationWp.mensaje}|{conversationWp.respuesta}'+'\n')  
+        newFile.write(f'{conversationWp.fecha}|{conversationWp.alumno}|{conversationWp.mensaje}|{conversationWp.respuesta}\n')  
 
+
+def fnSaveLog(line):
+    newFile = open(_lastFiledProcessedLog,"w", encoding = "utf-8")
+    newFile.write(line)
 
 if __name__ == '__main__':
     run()
