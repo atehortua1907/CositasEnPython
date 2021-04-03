@@ -3,9 +3,7 @@ import os
 import time
 
 start = time.time()
-
-
-files_dir = "D:\\David A\\Dama\\Conversaciones\\SepOctu"
+files_dir = "D:\\Dama\\Informes\\Marz13_2021"
 listConversacionWp = []
 Generalfile = 'conversaciones.csv'
 _lastFiledProcessedLog = 'lastFileProcessed.txt'
@@ -53,34 +51,25 @@ def fnGetAlumnoName(fileOpen):
 
 def fnAddMessageToLastPerson(conversacionPart):
     lastConversation = listConversacionWp[-1]
-    if lastConversation.respuesta == '':
-        lastConversation.mensaje = '{} {}'.format(lastConversation.mensaje.strip('\n'), conversacionPart.strip('\n'))
-    else:
-        lastConversation.respuesta = '{} {}'.format(lastConversation.respuesta.strip('\n'), conversacionPart.strip('\n'))
-    
+    lastConversation.mensaje = '{} {}'.format(lastConversation.mensaje.strip('\n'), conversacionPart.strip('\n'))
     listConversacionWp[-1] = lastConversation
 
 def fnObtenerConversacionWpModel(conversacionPart, alumnoName):
-    message, teacherMessage = fnGetMessages(alumnoName, conversacionPart)
-    return ConversacionWpModel(conversacionPart[0], alumnoName, message, teacherMessage)
+    message = fnGetMessage(alumnoName, conversacionPart)
+    return ConversacionWpModel(conversacionPart[0], alumnoName, message)
 
-
-def fnGetMessages(alumnoName, conversacionPart):
+def fnGetMessage(alumnoName, conversacionPart):
     personAndMessage = conversacionPart[1].split(': ')
-    alumnoMessage = ''
-    teacherMessage = ''    
-    if personAndMessage[0].strip() in teacherNames:
-        teacherMessage = personAndMessage[1]
-    else:
-        alumnoMessage = personAndMessage[1]
-    
-    return alumnoMessage.strip('\n'), teacherMessage.strip('\n')
+    messagePrefix = 'Docente'
+    message = personAndMessage[1].strip('\n')
+    if personAndMessage[0].strip() not in teacherNames:
+        messagePrefix = 'Alumno'    
+    return f'{messagePrefix} : {message}'
 
 def fnSaveFile():
     newFile = open(Generalfile,"w", encoding = "utf-8")
     for conversationWp in listConversacionWp:            
-        newFile.write(f'{conversationWp.fecha}|{conversationWp.alumno}|{conversationWp.mensaje}|{conversationWp.respuesta}\n')  
-
+        newFile.write(f'{conversationWp.fecha}|{conversationWp.alumno}|{conversationWp.mensaje}\n')  
 
 def fnSaveLog(line):
     newFile = open(_lastFiledProcessedLog,"w", encoding = "utf-8")
