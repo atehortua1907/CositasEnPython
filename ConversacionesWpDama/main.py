@@ -37,7 +37,8 @@ def fnObtenerConversacionesPorArchivo(file):
             if len(conversacionPart) == 1:
                 fnAddMessageToLastPerson(conversacionPart[0])
             else:
-                ConversacionWp = fnObtenerConversacionWpModel(conversacionPart, alumnoName)
+                message = fnGetMessage(alumnoName, conversacionPart)
+                ConversacionWp = ConversacionWpModel(conversacionPart[0], alumnoName, message)
                 listConversacionWp.append(ConversacionWp)
 
 def fnLineToIgnore(line):
@@ -53,10 +54,6 @@ def fnAddMessageToLastPerson(conversacionPart):
     lastConversation = listConversacionWp[-1]
     lastConversation.mensaje = '{} {}'.format(lastConversation.mensaje.strip('\n'), conversacionPart.strip('\n'))
     listConversacionWp[-1] = lastConversation
-
-def fnObtenerConversacionWpModel(conversacionPart, alumnoName):
-    message = fnGetMessage(alumnoName, conversacionPart)
-    return ConversacionWpModel(conversacionPart[0], alumnoName, message)
 
 def fnGetMessage(alumnoName, conversacionPart):
     personAndMessage = conversacionPart[1].split(': ')
